@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gira y Gana - FromNorth</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background: #fff; color: #000; }
+  .container { max-width: 480px; margin: 0 auto; padding: 2rem 1rem; text-align: center; }
+  .brand { font-size: 12px; letter-spacing: 4px; color: #888; text-transform: uppercase; margin-bottom: 0.5rem; }
+  h1 { font-size: 26px; font-weight: 400; margin-bottom: 0.5rem; }
+  .subtitle { font-size: 15px; color: #555; margin-bottom: 2rem; line-height: 1.7; }
+  .wheel-wrap { position: relative; width: 320px; height: 320px; margin: 0 auto 1.5rem; }
+  canvas#wheel { border-radius: 50%; display: block; }
+  .pointer { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-top: 28px solid #000; z-index: 10; }
+  .center-circle { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 48px; height: 48px; border-radius: 50%; background: #fff; border: 3px solid #000; z-index: 10; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; }
+  #spinBtn { margin-top: 1rem; padding: 14px 48px; font-size: 13px; font-weight: 500; letter-spacing: 3px; text-transform: uppercase; background: #000; color: #fff; border: none; border-radius: 6px; cursor: pointer; transition: opacity 0.2s; }
+  #spinBtn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .result-box { display: none; margin-top: 1.5rem; padding: 1.5rem; background: #f5f5f5; border-radius: 12px; }
+  .result-box h2 { font-size: 18px; font-weight: 500; margin-bottom: 0.5rem; }
+  .result-box p { font-size: 14px; color: #555; margin-bottom: 1rem; line-height: 1.6; }
+  .coupon-code { font-family: 'Courier New', monospace; font-size: 22px; font-weight: 700; letter-spacing: 4px; padding: 12px 24px; background: #fff; border: 2px dashed #000; border-radius: 8px; display: inline-block; margin-bottom: 1rem; }
+  .no-prize p { color: #555; font-size: 15px; margin-bottom: 1rem; }
+  .checkout-btn { display: inline-block; margin-top: 0.5rem; padding: 14px 36px; background: #000; color: #fff; font-size: 12px; letter-spacing: 3px; text-transform: uppercase; border: none; border-radius: 6px; cursor: pointer; text-decoration: none; }
+  .footer { margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid #eee; font-size: 11px; letter-spacing: 2px; color: #aaa; text-transform: uppercase; }
+</style>
+</head>
+<body>
+<div class="container">
+  <p class="brand">FromNorth</p>
+  <h1>Gira y gana</h1>
+  <p class="subtitle">Tenes un premio esperandote.<br>Gira la ruleta y descubrilo.</p>
+
+  <div class="wheel-wrap">
+    <div class="pointer"></div>
+    <canvas id="wheel" width="320" height="320"></canvas>
+    <div class="center-circle" onclick="spin()">★</div>
+  </div>
+
+  <button id="spinBtn" onclick="spin()">Girar ruleta</button>
+
+  <div class="result-box" id="resultBox"></div>
+
+  <div class="footer">@from.north_</div>
+</div>
+
+<script>
+const segments = [
+  { label: "1 prenda\ngratis", color: "#1a1a1a", text: "#fff", code: "RULETA 1", prize: "1 prenda gratis", msg: "Usa el codigo al finalizar tu compra y llevate la REMERA BASIC SNOW sin costo." },
+  { label: "10%\ndescuento", color: "#3d3d3d", text: "#fff", code: "RULETA 3", prize: "10% de descuento", msg: "Aplica el codigo en tu carrito y obtene un 10% off en toda la tienda." },
+  { label: "Segui\nparticipando", color: "#999", text: "#fff", code: null, prize: null, msg: null },
+  { label: "Envio\ngratis", color: "#2a2a2a", text: "#fff", code: "RULETA 5", prize: "Envio gratis", msg: "Usa el codigo y recibis tu pedido sin costo de envio." },
+  { label: "30%\ndescuento", color: "#111", text: "#fff", code: "RULETA 2", prize: "30% de descuento", msg: "Aplica el codigo en tu carrito y obtene un 30% off. Aprovechalo ahora." },
+  { label: "Segui\nparticipando", color: "#999", text: "#fff", code: null, prize: null, msg: null },
+  { label: "5%\ndescuento", color: "#555", text: "#fff", code: "RULETA 4", prize: "5% de descuento", msg: "Aplica el codigo en tu carrito y obtene un 5% off en toda la tienda." },
+  { label: "Segui\nparticipando", color: "#bbb", text: "#fff", code: null, prize: null, msg: null },
+  { label: "Envio\ngratis", color: "#2a2a2a", text: "#fff", code: "RULETA 5", prize: "Envio gratis", msg: "Usa el codigo y recibis tu pedido sin costo de envio." },
+  { label: "Segui\nparticipando", color: "#999", text: "#fff", code: null, prize: null, msg: null },
+  { label: "10%\ndescuento", color: "#3d3d3d", text: "#fff", code: "RULETA 3", prize: "10% de descuento", msg: "Aplica el codigo en tu carrito y obtene un 10% off en toda la tienda." },
+  { label: "5%\ndescuento", color: "#555", text: "#fff", code: "RULETA 4", prize: "5% de descuento", msg: "Aplica el codigo y obtene un 5% off en tu compra." },
+];
+
+const n = segments.length;
+const arc = (2 * Math.PI) / n;
+let currentAngle = 0;
+let spinning = false;
+let hasSpun = false;
+
+const canvas = document.getElementById('wheel');
+const ctx = canvas.getContext('2d');
+const cx = 160, cy = 160, r = 155;
+
+function drawWheel(angle) {
+  ctx.clearRect(0, 0, 320, 320);
+  for (let i = 0; i < n; i++) {
+    const start = angle + i * arc;
+    const end = start + arc;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, start, end);
+    ctx.closePath();
+    ctx.fillStyle = segments[i].color;
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(start + arc / 2);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = segments[i].text;
+    ctx.font = '500 11px Helvetica Neue, sans-serif';
+    const lines = segments[i].label.split('\n');
+    lines.forEach((line, li) => {
+      ctx.fillText(line, r - 10, (li - (lines.length - 1) / 2) * 15);
+    });
+    ctx.restore();
+  }
+  ctx.beginPath();
+  ctx.arc(cx, cy, 24, 0, 2 * Math.PI);
+  ctx.fillStyle = '#fff';
+  ctx.fill();
+  ctx.strokeStyle = '#000';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+}
+
+drawWheel(0);
+
+function spin() {
+  if (spinning || hasSpun) return;
+  spinning = true;
+  hasSpun = true;
+  document.getElementById('spinBtn').disabled = true;
+  document.getElementById('resultBox').style.display = 'none';
+  const extraSpins = 5 + Math.random() * 5;
+  const targetAngle = currentAngle + extraSpins * 2 * Math.PI + Math.random() * 2 * Math.PI;
+  const duration = 4000;
+  const start = performance.now();
+  const startAngle = currentAngle;
+  function easeOut(t) { return 1 - Math.pow(1 - t, 4); }
+  function animate(now) {
+    const elapsed = now - start;
+    const t = Math.min(elapsed / duration, 1);
+    currentAngle = startAngle + (targetAngle - startAngle) * easeOut(t);
+    drawWheel(currentAngle);
+    if (t < 1) {
+      requestAnimationFrame(animate);
+    } else {
+      spinning = false;
+      showResult();
+    }
+  }
+  requestAnimationFrame(animate);
+}
+
+function showResult() {
+  const pointerAngle = -Math.PI / 2;
+  const normalizedAngle = ((pointerAngle - currentAngle) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+  const index = Math.floor(normalizedAngle / arc) % n;
+  const seg = segments[index];
+  const box = document.getElementById('resultBox');
+  box.style.display = 'block';
+  if (seg.code) {
+    box.innerHTML = `
+      <h2>Ganaste: ${seg.prize}</h2>
+      <p>${seg.msg}</p>
+      <div class="coupon-code">${seg.code}</div><br>
+      <a class="checkout-btn" href="https://fromnorth.store" target="_blank">Ir a la tienda</a>
+    `;
+  } else {
+    box.innerHTML = `
+      <div class="no-prize">
+        <p>Esta vez no fue, pero tu carrito sigue esperandote.</p>
+        <a class="checkout-btn" href="https://fromnorth.store" target="_blank">Ver mi carrito</a>
+      </div>
+    `;
+  }
+}
+</script>
+</body>
+</html>
