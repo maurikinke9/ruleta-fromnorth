@@ -4,41 +4,422 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gira y Gana - FromNorth</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background: #fff; color: #000; }
-  .container { max-width: 480px; margin: 0 auto; padding: 2rem 1rem; text-align: center; }
-  .brand { font-size: 12px; letter-spacing: 4px; color: #888; text-transform: uppercase; margin-bottom: 0.5rem; }
-  h1 { font-size: 26px; font-weight: 400; margin-bottom: 0.5rem; }
-  .subtitle { font-size: 15px; color: #555; margin-bottom: 2rem; line-height: 1.7; }
-  .wheel-wrap { position: relative; width: 320px; height: 320px; margin: 0 auto 1.5rem; }
-  canvas#wheel { border-radius: 50%; display: block; }
-  .pointer { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-top: 28px solid #000; z-index: 10; }
-  .center-circle { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 48px; height: 48px; border-radius: 50%; background: #fff; border: 3px solid #000; z-index: 10; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; }
-  #spinBtn { margin-top: 1rem; padding: 14px 48px; font-size: 13px; font-weight: 500; letter-spacing: 3px; text-transform: uppercase; background: #000; color: #fff; border: none; border-radius: 6px; cursor: pointer; transition: opacity 0.2s; }
-  #spinBtn:disabled { opacity: 0.35; cursor: not-allowed; }
-  .result-box { display: none; margin-top: 1.5rem; padding: 1.5rem; background: #f5f5f5; border-radius: 12px; }
-  .result-box h2 { font-size: 18px; font-weight: 500; margin-bottom: 0.5rem; }
-  .result-box p { font-size: 14px; color: #555; margin-bottom: 1rem; line-height: 1.6; }
-  .coupon-code { font-family: 'Courier New', monospace; font-size: 22px; font-weight: 700; letter-spacing: 4px; padding: 12px 24px; background: #fff; border: 2px dashed #000; border-radius: 8px; display: inline-block; margin-bottom: 1rem; }
-  .no-prize p { color: #555; font-size: 15px; margin-bottom: 1rem; }
-  .checkout-btn { display: inline-block; margin-top: 0.5rem; padding: 14px 36px; background: #000; color: #fff; font-size: 12px; letter-spacing: 3px; text-transform: uppercase; border: none; border-radius: 6px; cursor: pointer; text-decoration: none; }
-  .footer { margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid #eee; font-size: 11px; letter-spacing: 2px; color: #aaa; text-transform: uppercase; }
+
+  :root {
+    --gold: #c9a84c;
+    --gold-light: #f0d080;
+    --gold-dark: #8a6820;
+    --deep: #0a0a12;
+    --card: #12121e;
+    --red: #9b1c1c;
+    --green: #145a32;
+    --felt: #0d3b27;
+    --text: #f5f0e8;
+  }
+
+  body {
+    font-family: 'Montserrat', sans-serif;
+    background: var(--deep);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background pattern */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(45deg, rgba(201,168,76,0.03) 0px, rgba(201,168,76,0.03) 1px, transparent 1px, transparent 60px),
+      repeating-linear-gradient(-45deg, rgba(201,168,76,0.03) 0px, rgba(201,168,76,0.03) 1px, transparent 1px, transparent 60px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 3rem;
+    text-align: center;
+  }
+
+  /* Header */
+  .brand-wrap {
+    margin-bottom: 1.5rem;
+  }
+
+  .brand {
+    display: inline-block;
+    font-size: 10px;
+    letter-spacing: 6px;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 0.6rem;
+    padding: 6px 18px;
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 2px;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 40px;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 50%, var(--gold-dark) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 1px;
+    line-height: 1.1;
+    margin-bottom: 0.5rem;
+  }
+
+  .subtitle {
+    font-size: 13px;
+    color: rgba(245,240,232,0.55);
+    letter-spacing: 1.5px;
+    line-height: 1.9;
+    text-transform: uppercase;
+  }
+
+  /* Divider */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 1.5rem 0;
+    opacity: 0.4;
+  }
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold));
+  }
+  .divider::after { background: linear-gradient(90deg, var(--gold), transparent); }
+  .divider span { color: var(--gold); font-size: 14px; }
+
+  /* Wheel area */
+  .wheel-stage {
+    position: relative;
+    display: inline-block;
+    margin: 0 auto 2rem;
+  }
+
+  /* Outer glow ring */
+  .wheel-glow {
+    position: absolute;
+    inset: -20px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(201,168,76,0.15) 0%, transparent 70%);
+    pointer-events: none;
+    animation: pulseGlow 3s ease-in-out infinite;
+  }
+
+  @keyframes pulseGlow {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.05); }
+  }
+
+  /* Decorative outer ring */
+  .wheel-ring {
+    position: relative;
+    width: 360px;
+    height: 360px;
+    border-radius: 50%;
+    background: conic-gradient(
+      var(--gold-dark) 0deg, var(--gold) 15deg, var(--gold-light) 30deg,
+      var(--gold) 45deg, var(--gold-dark) 60deg, var(--gold) 75deg,
+      var(--gold-light) 90deg, var(--gold) 105deg, var(--gold-dark) 120deg,
+      var(--gold) 135deg, var(--gold-light) 150deg, var(--gold) 165deg,
+      var(--gold-dark) 180deg, var(--gold) 195deg, var(--gold-light) 210deg,
+      var(--gold) 225deg, var(--gold-dark) 240deg, var(--gold) 255deg,
+      var(--gold-light) 270deg, var(--gold) 285deg, var(--gold-dark) 300deg,
+      var(--gold) 315deg, var(--gold-light) 330deg, var(--gold) 345deg, var(--gold-dark) 360deg
+    );
+    padding: 12px;
+    box-shadow:
+      0 0 0 3px rgba(201,168,76,0.2),
+      0 0 30px rgba(201,168,76,0.3),
+      inset 0 0 20px rgba(0,0,0,0.5);
+  }
+
+  /* Studs on the ring */
+  .stud {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: radial-gradient(circle at 35% 35%, var(--gold-light), var(--gold-dark));
+    border-radius: 50%;
+    box-shadow: 0 0 6px rgba(201,168,76,0.6);
+    top: 50%;
+    left: 50%;
+    transform-origin: 0 0;
+  }
+
+  .wheel-wrap {
+    position: relative;
+    width: 336px;
+    height: 336px;
+    border-radius: 50%;
+    overflow: hidden;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.7);
+  }
+
+  canvas#wheel {
+    display: block;
+    border-radius: 50%;
+  }
+
+  /* Pointer */
+  .pointer-wrap {
+    position: absolute;
+    top: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.8));
+  }
+
+  .pointer-wrap svg {
+    width: 32px;
+    height: 42px;
+  }
+
+  /* Center button */
+  .center-circle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, #fff 0%, var(--gold-light) 30%, var(--gold) 60%, var(--gold-dark) 100%);
+    border: 3px solid var(--gold-dark);
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    cursor: pointer;
+    box-shadow:
+      0 0 0 3px rgba(201,168,76,0.4),
+      0 4px 15px rgba(0,0,0,0.6),
+      inset 0 2px 4px rgba(255,255,255,0.4);
+    transition: transform 0.15s;
+  }
+
+  .center-circle:hover { transform: translate(-50%, -50%) scale(1.08); }
+
+  /* Spin button */
+  .btn-wrap {
+    position: relative;
+    display: inline-block;
+    margin-top: 0.5rem;
+  }
+
+  #spinBtn {
+    position: relative;
+    padding: 16px 56px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, var(--gold-dark) 0%, var(--gold) 50%, var(--gold-light) 100%);
+    color: #0a0a12;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.25s;
+    box-shadow:
+      0 4px 20px rgba(201,168,76,0.4),
+      0 1px 0 rgba(255,255,255,0.15) inset;
+    overflow: hidden;
+  }
+
+  #spinBtn::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.5s;
+  }
+
+  #spinBtn:hover::before { left: 140%; }
+  #spinBtn:hover { box-shadow: 0 6px 28px rgba(201,168,76,0.6); transform: translateY(-1px); }
+  #spinBtn:active { transform: translateY(0); }
+
+  #spinBtn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* Result box */
+  .result-box {
+    display: none;
+    margin-top: 2rem;
+    padding: 2rem;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border: 1px solid rgba(201,168,76,0.35);
+    border-radius: 12px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(201,168,76,0.1);
+    animation: slideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(20px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .result-box h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    background: linear-gradient(135deg, var(--gold-light), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.75rem;
+  }
+
+  .result-box p {
+    font-size: 13px;
+    color: rgba(245,240,232,0.65);
+    margin-bottom: 1.25rem;
+    line-height: 1.7;
+    letter-spacing: 0.3px;
+  }
+
+  .coupon-code {
+    font-family: 'Courier New', monospace;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 6px;
+    padding: 14px 28px;
+    background: rgba(201,168,76,0.08);
+    border: 2px dashed rgba(201,168,76,0.5);
+    border-radius: 6px;
+    display: inline-block;
+    margin-bottom: 1.25rem;
+    color: var(--gold-light);
+    text-shadow: 0 0 20px rgba(201,168,76,0.4);
+    animation: codePulse 2s ease-in-out infinite;
+  }
+
+  @keyframes codePulse {
+    0%, 100% { box-shadow: 0 0 10px rgba(201,168,76,0.2); }
+    50% { box-shadow: 0 0 25px rgba(201,168,76,0.4); }
+  }
+
+  .checkout-btn {
+    display: inline-block;
+    margin-top: 0.5rem;
+    padding: 14px 36px;
+    background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+    color: #0a0a12;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+    box-shadow: 0 4px 16px rgba(201,168,76,0.35);
+  }
+
+  .checkout-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(201,168,76,0.5);
+  }
+
+  .no-prize p { color: rgba(245,240,232,0.6); font-size: 14px; margin-bottom: 1.25rem; }
+
+  /* Footer */
+  .footer {
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(201,168,76,0.15);
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: rgba(201,168,76,0.4);
+    text-transform: uppercase;
+  }
+
+  /* Confetti */
+  .confetti-piece {
+    position: fixed;
+    width: 8px;
+    height: 8px;
+    top: -10px;
+    border-radius: 1px;
+    animation: confettiFall linear forwards;
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  @keyframes confettiFall {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
 </style>
 </head>
 <body>
 <div class="container">
-  <p class="brand">FromNorth</p>
-  <h1>Gira y gana</h1>
-  <p class="subtitle">Tenes un premio esperandote.<br>Gira la ruleta y descubrilo.</p>
-
-  <div class="wheel-wrap">
-    <div class="pointer"></div>
-    <canvas id="wheel" width="320" height="320"></canvas>
-    <div class="center-circle" onclick="spin()">★</div>
+  <div class="brand-wrap">
+    <p class="brand">FromNorth</p>
+    <h1>Gira & Gana</h1>
+    <p class="subtitle">Tenés un premio esperándote<br>Girá la ruleta y descubrilo</p>
   </div>
 
-  <button id="spinBtn" onclick="spin()">Girar ruleta</button>
+  <div class="divider"><span>✦</span></div>
+
+  <div class="wheel-stage">
+    <div class="wheel-glow"></div>
+    <div class="wheel-ring" id="wheelRing">
+      <!-- Studs added by JS -->
+      <div class="pointer-wrap">
+        <svg viewBox="0 0 32 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M16 42 L0 6 Q16 -4 32 6 Z" fill="url(#pg)"/>
+          <path d="M16 38 L2 8 Q16 0 30 8 Z" fill="url(#pg2)" opacity="0.5"/>
+          <circle cx="16" cy="8" r="5" fill="url(#pg3)"/>
+          <defs>
+            <linearGradient id="pg" x1="0" y1="0" x2="32" y2="42" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#f0d080"/>
+              <stop offset="50%" stop-color="#c9a84c"/>
+              <stop offset="100%" stop-color="#8a6820"/>
+            </linearGradient>
+            <linearGradient id="pg2" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#fff" stop-opacity="0.3"/>
+              <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
+            </linearGradient>
+            <radialGradient id="pg3" cx="40%" cy="35%">
+              <stop offset="0%" stop-color="#fff"/>
+              <stop offset="100%" stop-color="#c9a84c"/>
+            </radialGradient>
+          </defs>
+        </svg>
+      </div>
+      <div class="wheel-wrap">
+        <canvas id="wheel" width="336" height="336"></canvas>
+        <div class="center-circle" onclick="spin()">★</div>
+      </div>
+    </div>
+  </div>
+
+  <button id="spinBtn" onclick="spin()">✦ Girar Ruleta ✦</button>
 
   <div class="result-box" id="resultBox"></div>
 
@@ -46,19 +427,34 @@
 </div>
 
 <script>
+// Add studs to the outer ring
+const ring = document.getElementById('wheelRing');
+const studCount = 24;
+for (let i = 0; i < studCount; i++) {
+  const stud = document.createElement('div');
+  stud.className = 'stud';
+  const angle = (i / studCount) * 2 * Math.PI - Math.PI / 2;
+  const radius = 170;
+  const x = Math.cos(angle) * radius;
+  const y = Math.sin(angle) * radius;
+  stud.style.marginLeft = x + 'px';
+  stud.style.marginTop = y + 'px';
+  ring.appendChild(stud);
+}
+
 const segments = [
-  { label: "1 prenda\ngratis", color: "#1a1a1a", text: "#fff", code: "RULETA 1", prize: "1 prenda gratis", msg: "Usa el codigo al finalizar tu compra y llevate la REMERA BASIC SNOW sin costo." },
-  { label: "10%\ndescuento", color: "#3d3d3d", text: "#fff", code: "RULETA 3", prize: "10% de descuento", msg: "Aplica el codigo en tu carrito y obtene un 10% off en toda la tienda." },
-  { label: "Segui\nparticipando", color: "#999", text: "#fff", code: null, prize: null, msg: null },
-  { label: "Envio\ngratis", color: "#2a2a2a", text: "#fff", code: "RULETA 5", prize: "Envio gratis", msg: "Usa el codigo y recibis tu pedido sin costo de envio." },
-  { label: "30%\ndescuento", color: "#111", text: "#fff", code: "RULETA 2", prize: "30% de descuento", msg: "Aplica el codigo en tu carrito y obtene un 30% off. Aprovechalo ahora." },
-  { label: "Segui\nparticipando", color: "#999", text: "#fff", code: null, prize: null, msg: null },
-  { label: "5%\ndescuento", color: "#555", text: "#fff", code: "RULETA 4", prize: "5% de descuento", msg: "Aplica el codigo en tu carrito y obtene un 5% off en toda la tienda." },
-  { label: "Segui\nparticipando", color: "#bbb", text: "#fff", code: null, prize: null, msg: null },
-  { label: "Envio\ngratis", color: "#2a2a2a", text: "#fff", code: "RULETA 5", prize: "Envio gratis", msg: "Usa el codigo y recibis tu pedido sin costo de envio." },
-  { label: "Segui\nparticipando", color: "#999", text: "#fff", code: null, prize: null, msg: null },
-  { label: "10%\ndescuento", color: "#3d3d3d", text: "#fff", code: "RULETA 3", prize: "10% de descuento", msg: "Aplica el codigo en tu carrito y obtene un 10% off en toda la tienda." },
-  { label: "5%\ndescuento", color: "#555", text: "#fff", code: "RULETA 4", prize: "5% de descuento", msg: "Aplica el codigo y obtene un 5% off en tu compra." },
+  { label: "1 prenda\ngratis",    color: "#8b1a1a", rim: "#c0392b", text: "#ffd700", code: "RULETA 1", prize: "1 prenda gratis", msg: "Usá el código al finalizar tu compra y llevate la Remera Basic Snow sin costo." },
+  { label: "10%\ndescuento",      color: "#1a3a1a", rim: "#27ae60", text: "#ffd700", code: "RULETA 3", prize: "10% de descuento", msg: "Aplicá el código en tu carrito y obtenete un 10% off en toda la tienda." },
+  { label: "Seguí\nparticipando", color: "#1e1e2e", rim: "#4a4a6a", text: "#aaa",    code: null,        prize: null,            msg: null },
+  { label: "Envío\ngratis",       color: "#1a2a3a", rim: "#2980b9", text: "#ffd700", code: "RULETA 5", prize: "Envío gratis",    msg: "Usá el código y recibís tu pedido sin costo de envío." },
+  { label: "30%\ndescuento",      color: "#3a1a1a", rim: "#e74c3c", text: "#ffd700", code: "RULETA 2", prize: "30% de descuento",msg: "Aplicá el código en tu carrito y obtenete un 30% off. ¡Aprovechalo ahora!" },
+  { label: "Seguí\nparticipando", color: "#1e1e2e", rim: "#4a4a6a", text: "#aaa",    code: null,        prize: null,            msg: null },
+  { label: "5%\ndescuento",       color: "#1a1a3a", rim: "#8e44ad", text: "#ffd700", code: "RULETA 4", prize: "5% de descuento", msg: "Aplicá el código y obtenete un 5% off en toda la tienda." },
+  { label: "Seguí\nparticipando", color: "#1e1e2e", rim: "#4a4a6a", text: "#aaa",    code: null,        prize: null,            msg: null },
+  { label: "Envío\ngratis",       color: "#1a2a3a", rim: "#2980b9", text: "#ffd700", code: "RULETA 5", prize: "Envío gratis",    msg: "Usá el código y recibís tu pedido sin costo de envío." },
+  { label: "Seguí\nparticipando", color: "#1e1e2e", rim: "#4a4a6a", text: "#aaa",    code: null,        prize: null,            msg: null },
+  { label: "10%\ndescuento",      color: "#1a3a1a", rim: "#27ae60", text: "#ffd700", code: "RULETA 3", prize: "10% de descuento",msg: "Aplicá el código en tu carrito y obtenete un 10% off en toda la tienda." },
+  { label: "5%\ndescuento",       color: "#1a1a3a", rim: "#8e44ad", text: "#ffd700", code: "RULETA 4", prize: "5% de descuento", msg: "Aplicá el código y obtenete un 5% off en tu compra." },
 ];
 
 const n = segments.length;
@@ -69,41 +465,94 @@ let hasSpun = false;
 
 const canvas = document.getElementById('wheel');
 const ctx = canvas.getContext('2d');
-const cx = 160, cy = 160, r = 155;
+const cx = 168, cy = 168, r = 160;
 
 function drawWheel(angle) {
-  ctx.clearRect(0, 0, 320, 320);
+  ctx.clearRect(0, 0, 336, 336);
+
   for (let i = 0; i < n; i++) {
     const start = angle + i * arc;
     const end = start + arc;
+
+    // Main segment fill
     ctx.beginPath();
     ctx.moveTo(cx, cy);
     ctx.arc(cx, cy, r, start, end);
     ctx.closePath();
     ctx.fillStyle = segments[i].color;
     ctx.fill();
-    ctx.strokeStyle = '#fff';
+
+    // Rim stripe
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, start, end);
+    ctx.arc(cx, cy, r * 0.82, end, start, true);
+    ctx.closePath();
+    ctx.fillStyle = segments[i].rim;
+    ctx.fill();
+
+    // Subtle radial gradient overlay on rim
+    const midAngle = start + arc / 2;
+    const gx = cx + Math.cos(midAngle) * r * 0.91;
+    const gy = cy + Math.sin(midAngle) * r * 0.91;
+    const grad = ctx.createRadialGradient(gx, gy, 0, gx, gy, r * 0.15);
+    grad.addColorStop(0, 'rgba(255,255,255,0.18)');
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, start, end);
+    ctx.arc(cx, cy, r * 0.82, end, start, true);
+    ctx.closePath();
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // Divider lines (gold)
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(start) * r, cy + Math.sin(start) * r);
+    ctx.strokeStyle = 'rgba(201,168,76,0.6)';
     ctx.lineWidth = 1.5;
     ctx.stroke();
+
+    // Segment text
     ctx.save();
     ctx.translate(cx, cy);
     ctx.rotate(start + arc / 2);
     ctx.textAlign = 'right';
-    ctx.fillStyle = segments[i].text;
-    ctx.font = '500 11px Helvetica Neue, sans-serif';
     const lines = segments[i].label.split('\n');
     lines.forEach((line, li) => {
-      ctx.fillText(line, r - 10, (li - (lines.length - 1) / 2) * 15);
+      const yOff = (li - (lines.length - 1) / 2) * 15;
+      // Text shadow
+      ctx.font = '700 11px Montserrat, sans-serif';
+      ctx.fillStyle = 'rgba(0,0,0,0.6)';
+      ctx.fillText(line, r * 0.78 + 1, yOff + 1);
+      // Text
+      ctx.fillStyle = segments[i].text;
+      ctx.fillText(line, r * 0.78, yOff);
     });
     ctx.restore();
   }
+
+  // Inner dark circle
   ctx.beginPath();
-  ctx.arc(cx, cy, 24, 0, 2 * Math.PI);
-  ctx.fillStyle = '#fff';
+  ctx.arc(cx, cy, r * 0.2, 0, 2 * Math.PI);
+  const innerGrad = ctx.createRadialGradient(cx - 5, cy - 5, 2, cx, cy, r * 0.2);
+  innerGrad.addColorStop(0, '#3a3020');
+  innerGrad.addColorStop(1, '#1a1408');
+  ctx.fillStyle = innerGrad;
   ctx.fill();
-  ctx.strokeStyle = '#000';
-  ctx.lineWidth = 3;
+  ctx.strokeStyle = 'rgba(201,168,76,0.5)';
+  ctx.lineWidth = 2;
   ctx.stroke();
+
+  // Decorative dots on inner ring
+  for (let i = 0; i < n; i++) {
+    const a = angle + i * arc + arc / 2;
+    const dx = cx + Math.cos(a) * r * 0.25;
+    const dy = cy + Math.sin(a) * r * 0.25;
+    ctx.beginPath();
+    ctx.arc(dx, dy, 2.5, 0, 2 * Math.PI);
+    ctx.fillStyle = 'rgba(201,168,76,0.5)';
+    ctx.fill();
+  }
 }
 
 drawWheel(0);
@@ -114,12 +563,15 @@ function spin() {
   hasSpun = true;
   document.getElementById('spinBtn').disabled = true;
   document.getElementById('resultBox').style.display = 'none';
-  const extraSpins = 5 + Math.random() * 5;
+
+  const extraSpins = 6 + Math.random() * 4;
   const targetAngle = currentAngle + extraSpins * 2 * Math.PI + Math.random() * 2 * Math.PI;
-  const duration = 4000;
+  const duration = 5000;
   const start = performance.now();
   const startAngle = currentAngle;
+
   function easeOut(t) { return 1 - Math.pow(1 - t, 4); }
+
   function animate(now) {
     const elapsed = now - start;
     const t = Math.min(elapsed / duration, 1);
@@ -132,6 +584,7 @@ function spin() {
       showResult();
     }
   }
+
   requestAnimationFrame(animate);
 }
 
@@ -142,20 +595,41 @@ function showResult() {
   const seg = segments[index];
   const box = document.getElementById('resultBox');
   box.style.display = 'block';
+
   if (seg.code) {
+    launchConfetti();
     box.innerHTML = `
-      <h2>Ganaste: ${seg.prize}</h2>
+      <h2>🎉 ¡Ganaste: ${seg.prize}!</h2>
       <p>${seg.msg}</p>
       <div class="coupon-code">${seg.code}</div><br>
-      <a class="checkout-btn" href="https://fromnorth.store" target="_blank">Ir a la tienda</a>
+      <a class="checkout-btn" href="https://fromnorth.store" target="_blank">✦ Ir a la tienda ✦</a>
     `;
   } else {
     box.innerHTML = `
       <div class="no-prize">
-        <p>Esta vez no fue, pero tu carrito sigue esperandote.</p>
-        <a class="checkout-btn" href="https://fromnorth.store" target="_blank">Ver mi carrito</a>
+        <p>Esta vez no fue, pero tu carrito sigue esperándote.</p>
+        <a class="checkout-btn" href="https://fromnorth.store" target="_blank">✦ Ver mi carrito ✦</a>
       </div>
     `;
+  }
+}
+
+function launchConfetti() {
+  const colors = ['#c9a84c', '#f0d080', '#e74c3c', '#27ae60', '#2980b9', '#8e44ad', '#fff'];
+  for (let i = 0; i < 80; i++) {
+    setTimeout(() => {
+      const piece = document.createElement('div');
+      piece.className = 'confetti-piece';
+      piece.style.left = Math.random() * 100 + 'vw';
+      piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+      piece.style.width = (6 + Math.random() * 8) + 'px';
+      piece.style.height = (6 + Math.random() * 8) + 'px';
+      piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+      piece.style.animationDuration = (2 + Math.random() * 2.5) + 's';
+      piece.style.animationDelay = '0s';
+      document.body.appendChild(piece);
+      setTimeout(() => piece.remove(), 5000);
+    }, i * 30);
   }
 }
 </script>
