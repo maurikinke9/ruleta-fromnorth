@@ -28,7 +28,6 @@
     overflow-x: hidden;
   }
 
-  /* Background pattern */
   body::before {
     content: '';
     position: fixed;
@@ -49,10 +48,7 @@
     text-align: center;
   }
 
-  /* Header */
-  .brand-wrap {
-    margin-bottom: 1.5rem;
-  }
+  .brand-wrap { margin-bottom: 1.5rem; }
 
   .brand {
     display: inline-block;
@@ -87,7 +83,6 @@
     text-transform: uppercase;
   }
 
-  /* Divider */
   .divider {
     display: flex;
     align-items: center;
@@ -104,14 +99,12 @@
   .divider::after { background: linear-gradient(90deg, var(--gold), transparent); }
   .divider span { color: var(--gold); font-size: 14px; }
 
-  /* Wheel area */
   .wheel-stage {
     position: relative;
     display: inline-block;
     margin: 0 auto 2rem;
   }
 
-  /* Outer glow ring */
   .wheel-glow {
     position: absolute;
     inset: -20px;
@@ -126,7 +119,6 @@
     50% { opacity: 1; transform: scale(1.05); }
   }
 
-  /* Decorative outer ring */
   .wheel-ring {
     position: relative;
     width: 360px;
@@ -149,7 +141,6 @@
       inset 0 0 20px rgba(0,0,0,0.5);
   }
 
-  /* Studs on the ring */
   .stud {
     position: absolute;
     width: 10px;
@@ -171,12 +162,8 @@
     box-shadow: inset 0 0 20px rgba(0,0,0,0.7);
   }
 
-  canvas#wheel {
-    display: block;
-    border-radius: 50%;
-  }
+  canvas#wheel { display: block; border-radius: 50%; }
 
-  /* Pointer */
   .pointer-wrap {
     position: absolute;
     top: -4px;
@@ -186,12 +173,8 @@
     filter: drop-shadow(0 4px 8px rgba(0,0,0,0.8));
   }
 
-  .pointer-wrap svg {
-    width: 32px;
-    height: 42px;
-  }
+  .pointer-wrap svg { width: 32px; height: 42px; }
 
-  /* Center button */
   .center-circle {
     position: absolute;
     top: 50%;
@@ -217,7 +200,6 @@
 
   .center-circle:hover { transform: translate(-50%, -50%) scale(1.08); }
 
-  /* Spin button */
   .btn-wrap {
     position: relative;
     display: inline-block;
@@ -265,7 +247,6 @@
     box-shadow: none;
   }
 
-  /* Result box */
   .result-box {
     display: none;
     margin-top: 2rem;
@@ -347,7 +328,28 @@
 
   .no-prize p { color: rgba(245,240,232,0.6); font-size: 14px; margin-bottom: 1.25rem; }
 
-  /* Footer */
+  .loading-box {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    text-align: center;
+    color: rgba(201,168,76,0.6);
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .error-box {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: rgba(155,28,28,0.15);
+    border: 1px solid rgba(155,28,28,0.4);
+    border-radius: 8px;
+    color: rgba(245,240,232,0.7);
+    font-size: 13px;
+    line-height: 1.7;
+    display: none;
+  }
+
   .footer {
     margin-top: 2.5rem;
     padding-top: 1.5rem;
@@ -358,7 +360,6 @@
     text-transform: uppercase;
   }
 
-  /* Confetti */
   .confetti-piece {
     position: fixed;
     width: 8px;
@@ -389,7 +390,6 @@
   <div class="wheel-stage">
     <div class="wheel-glow"></div>
     <div class="wheel-ring" id="wheelRing">
-      <!-- Studs added by JS -->
       <div class="pointer-wrap">
         <svg viewBox="0 0 32 42" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M16 42 L0 6 Q16 -4 32 6 Z" fill="url(#pg)"/>
@@ -414,20 +414,33 @@
       </div>
       <div class="wheel-wrap">
         <canvas id="wheel" width="336" height="336"></canvas>
-        <div class="center-circle" onclick="spin()">★</div>
+        <div class="center-circle" id="centerBtn" onclick="spin()">★</div>
       </div>
     </div>
   </div>
 
-  <button id="spinBtn" onclick="spin()">✦ Girar Ruleta ✦</button>
+  <button id="spinBtn" onclick="spin()" disabled>✦ Cargando... ✦</button>
 
+  <div class="loading-box" id="loadingBox">Verificando tu acceso...</div>
+  <div class="error-box" id="errorBox"></div>
   <div class="result-box" id="resultBox"></div>
 
   <div class="footer">@from.north_</div>
 </div>
 
 <script>
-// Add studs to the outer ring
+// ============================================================
+// CONFIGURACIÓN — cambiá estas URLs si cambia el dominio de n8n
+// ============================================================
+const WEBHOOK_CHECK = 'https://devn8n.santafeia.shop/webhook/check-ruleta';
+const WEBHOOK_SAVE  = 'https://devn8n.santafeia.shop/webhook/save-ruleta';
+// ============================================================
+
+// Leer email de la URL (?email=...)
+const params = new URLSearchParams(window.location.search);
+const EMAIL = (params.get('email') || '').trim().toLowerCase();
+
+// Studs decorativos
 const ring = document.getElementById('wheelRing');
 const studCount = 24;
 for (let i = 0; i < studCount; i++) {
@@ -435,26 +448,24 @@ for (let i = 0; i < studCount; i++) {
   stud.className = 'stud';
   const angle = (i / studCount) * 2 * Math.PI - Math.PI / 2;
   const radius = 170;
-  const x = Math.cos(angle) * radius;
-  const y = Math.sin(angle) * radius;
-  stud.style.marginLeft = x + 'px';
-  stud.style.marginTop = y + 'px';
+  stud.style.marginLeft = Math.cos(angle) * radius + 'px';
+  stud.style.marginTop  = Math.sin(angle) * radius + 'px';
   ring.appendChild(stud);
 }
 
 const segments = [
-  { label: "1 prenda\ngratis",    color: "#8b1a1a", rim: "#c0392b", text: "#ffd700", code: "RULETA 1", prize: "1 prenda gratis", msg: "Usá el código al finalizar tu compra y llevate la Remera Basic Snow sin costo." },
-  { label: "10%\ndescuento",      color: "#1a3a1a", rim: "#27ae60", text: "#ffd700", code: "RULETA 3", prize: "10% de descuento", msg: "Aplicá el código en tu carrito y obtenete un 10% off en toda la tienda." },
-  { label: "Seguí\nparticipando", color: "#1e1e2e", rim: "#4a4a6a", text: "#aaa",    code: null,        prize: null,            msg: null },
-  { label: "Envío\ngratis",       color: "#1a2a3a", rim: "#2980b9", text: "#ffd700", code: "RULETA 5", prize: "Envío gratis",    msg: "Usá el código y recibís tu pedido sin costo de envío." },
-  { label: "30%\ndescuento",      color: "#3a1a1a", rim: "#e74c3c", text: "#ffd700", code: "RULETA 2", prize: "30% de descuento",msg: "Aplicá el código en tu carrito y obtenete un 30% off. ¡Aprovechalo ahora!" },
-  { label: "Seguí\nparticipando", color: "#1e1e2e", rim: "#4a4a6a", text: "#aaa",    code: null,        prize: null,            msg: null },
-  { label: "5%\ndescuento",       color: "#1a1a3a", rim: "#8e44ad", text: "#ffd700", code: "RULETA 4", prize: "5% de descuento", msg: "Aplicá el código y obtenete un 5% off en toda la tienda." },
-  { label: "Seguí\nparticipando", color: "#1e1e2e", rim: "#4a4a6a", text: "#aaa",    code: null,        prize: null,            msg: null },
-  { label: "Envío\ngratis",       color: "#1a2a3a", rim: "#2980b9", text: "#ffd700", code: "RULETA 5", prize: "Envío gratis",    msg: "Usá el código y recibís tu pedido sin costo de envío." },
-  { label: "Seguí\nparticipando", color: "#1e1e2e", rim: "#4a4a6a", text: "#aaa",    code: null,        prize: null,            msg: null },
-  { label: "10%\ndescuento",      color: "#1a3a1a", rim: "#27ae60", text: "#ffd700", code: "RULETA 3", prize: "10% de descuento",msg: "Aplicá el código en tu carrito y obtenete un 10% off en toda la tienda." },
-  { label: "5%\ndescuento",       color: "#1a1a3a", rim: "#8e44ad", text: "#ffd700", code: "RULETA 4", prize: "5% de descuento", msg: "Aplicá el código y obtenete un 5% off en tu compra." },
+  { label: "1 prenda\ngratis",    color: "#8b1a1a", rim: "#c0392b", text: "#ffd700", code: "RULETA1", prize: "1 prenda gratis",    msg: "Usá el código al finalizar tu compra y llevate la Remera Basic Snow sin costo." },
+  { label: "10%\ndescuento",      color: "#1a3a1a", rim: "#27ae60", text: "#ffd700", code: "RULETA3", prize: "10% de descuento",    msg: "Aplicá el código en tu carrito y obtenete un 10% off en toda la tienda." },
+  { label: "Seguí\nparticipando", color: "#1e1e2e", rim: "#4a4a6a", text: "#aaa",    code: null,       prize: null,                 msg: null },
+  { label: "Envío\ngratis",       color: "#1a2a3a", rim: "#2980b9", text: "#ffd700", code: "RULETA5", prize: "Envío gratis",        msg: "Usá el código y recibís tu pedido sin costo de envío." },
+  { label: "30%\ndescuento",      color: "#3a1a1a", rim: "#e74c3c", text: "#ffd700", code: "RULETA2", prize: "30% de descuento",    msg: "Aplicá el código en tu carrito y obtenete un 30% off. ¡Aprovechalo ahora!" },
+  { label: "Seguí\nparticipando", color: "#1e1e2e", rim: "#4a4a6a", text: "#aaa",    code: null,       prize: null,                 msg: null },
+  { label: "5%\ndescuento",       color: "#1a1a3a", rim: "#8e44ad", text: "#ffd700", code: "RULETA4", prize: "5% de descuento",     msg: "Aplicá el código y obtenete un 5% off en toda la tienda." },
+  { label: "Seguí\nparticipando", color: "#1e1e2e", rim: "#4a4a6a", text: "#aaa",    code: null,       prize: null,                 msg: null },
+  { label: "Envío\ngratis",       color: "#1a2a3a", rim: "#2980b9", text: "#ffd700", code: "RULETA5", prize: "Envío gratis",        msg: "Usá el código y recibís tu pedido sin costo de envío." },
+  { label: "Seguí\nparticipando", color: "#1e1e2e", rim: "#4a4a6a", text: "#aaa",    code: null,       prize: null,                 msg: null },
+  { label: "10%\ndescuento",      color: "#1a3a1a", rim: "#27ae60", text: "#ffd700", code: "RULETA3", prize: "10% de descuento",    msg: "Aplicá el código en tu carrito y obtenete un 10% off en toda la tienda." },
+  { label: "5%\ndescuento",       color: "#1a1a3a", rim: "#8e44ad", text: "#ffd700", code: "RULETA4", prize: "5% de descuento",     msg: "Aplicá el código y obtenete un 5% off en tu compra." },
 ];
 
 const n = segments.length;
@@ -469,28 +480,21 @@ const cx = 168, cy = 168, r = 160;
 
 function drawWheel(angle) {
   ctx.clearRect(0, 0, 336, 336);
-
   for (let i = 0; i < n; i++) {
     const start = angle + i * arc;
     const end = start + arc;
-
-    // Main segment fill
     ctx.beginPath();
     ctx.moveTo(cx, cy);
     ctx.arc(cx, cy, r, start, end);
     ctx.closePath();
     ctx.fillStyle = segments[i].color;
     ctx.fill();
-
-    // Rim stripe
     ctx.beginPath();
     ctx.arc(cx, cy, r, start, end);
     ctx.arc(cx, cy, r * 0.82, end, start, true);
     ctx.closePath();
     ctx.fillStyle = segments[i].rim;
     ctx.fill();
-
-    // Subtle radial gradient overlay on rim
     const midAngle = start + arc / 2;
     const gx = cx + Math.cos(midAngle) * r * 0.91;
     const gy = cy + Math.sin(midAngle) * r * 0.91;
@@ -503,16 +507,12 @@ function drawWheel(angle) {
     ctx.closePath();
     ctx.fillStyle = grad;
     ctx.fill();
-
-    // Divider lines (gold)
     ctx.beginPath();
     ctx.moveTo(cx, cy);
     ctx.lineTo(cx + Math.cos(start) * r, cy + Math.sin(start) * r);
     ctx.strokeStyle = 'rgba(201,168,76,0.6)';
     ctx.lineWidth = 1.5;
     ctx.stroke();
-
-    // Segment text
     ctx.save();
     ctx.translate(cx, cy);
     ctx.rotate(start + arc / 2);
@@ -520,18 +520,14 @@ function drawWheel(angle) {
     const lines = segments[i].label.split('\n');
     lines.forEach((line, li) => {
       const yOff = (li - (lines.length - 1) / 2) * 15;
-      // Text shadow
       ctx.font = '700 11px Montserrat, sans-serif';
       ctx.fillStyle = 'rgba(0,0,0,0.6)';
       ctx.fillText(line, r * 0.78 + 1, yOff + 1);
-      // Text
       ctx.fillStyle = segments[i].text;
       ctx.fillText(line, r * 0.78, yOff);
     });
     ctx.restore();
   }
-
-  // Inner dark circle
   ctx.beginPath();
   ctx.arc(cx, cy, r * 0.2, 0, 2 * Math.PI);
   const innerGrad = ctx.createRadialGradient(cx - 5, cy - 5, 2, cx, cy, r * 0.2);
@@ -542,14 +538,10 @@ function drawWheel(angle) {
   ctx.strokeStyle = 'rgba(201,168,76,0.5)';
   ctx.lineWidth = 2;
   ctx.stroke();
-
-  // Decorative dots on inner ring
   for (let i = 0; i < n; i++) {
     const a = angle + i * arc + arc / 2;
-    const dx = cx + Math.cos(a) * r * 0.25;
-    const dy = cy + Math.sin(a) * r * 0.25;
     ctx.beginPath();
-    ctx.arc(dx, dy, 2.5, 0, 2 * Math.PI);
+    ctx.arc(cx + Math.cos(a) * r * 0.25, cy + Math.sin(a) * r * 0.25, 2.5, 0, 2 * Math.PI);
     ctx.fillStyle = 'rgba(201,168,76,0.5)';
     ctx.fill();
   }
@@ -557,6 +549,53 @@ function drawWheel(angle) {
 
 drawWheel(0);
 
+// ============================================================
+// VERIFICACIÓN AL CARGAR — consulta n8n
+// ============================================================
+async function verificarAcceso() {
+  const loadingBox = document.getElementById('loadingBox');
+  const spinBtn    = document.getElementById('spinBtn');
+  const centerBtn  = document.getElementById('centerBtn');
+  const errorBox   = document.getElementById('errorBox');
+
+  if (!EMAIL) {
+    loadingBox.style.display = 'none';
+    errorBox.style.display = 'block';
+    errorBox.innerHTML = 'Este link no es válido. Revisá el mail que recibiste y usá el botón original.';
+    spinBtn.disabled = true;
+    centerBtn.onclick = null;
+    return;
+  }
+
+  try {
+    const res  = await fetch(`${WEBHOOK_CHECK}?email=${encodeURIComponent(EMAIL)}`);
+    const data = await res.json();
+    loadingBox.style.display = 'none';
+
+    if (data.puede === false) {
+      // Ya giró — mostrar su premio anterior
+      hasSpun = true;
+      spinBtn.disabled = true;
+      centerBtn.onclick = null;
+      mostrarPremio(data.premio, data.codigo, data.mensaje, true);
+    } else {
+      // Puede girar
+      spinBtn.disabled = false;
+      spinBtn.textContent = '✦ Girar Ruleta ✦';
+    }
+  } catch (e) {
+    loadingBox.style.display = 'none';
+    errorBox.style.display = 'block';
+    errorBox.innerHTML = 'Hubo un error al verificar tu acceso. Intentá de nuevo en unos minutos.';
+    spinBtn.disabled = true;
+  }
+}
+
+verificarAcceso();
+
+// ============================================================
+// GIRAR
+// ============================================================
 function spin() {
   if (spinning || hasSpun) return;
   spinning = true;
@@ -564,11 +603,11 @@ function spin() {
   document.getElementById('spinBtn').disabled = true;
   document.getElementById('resultBox').style.display = 'none';
 
-  const extraSpins = 6 + Math.random() * 4;
+  const extraSpins  = 6 + Math.random() * 4;
   const targetAngle = currentAngle + extraSpins * 2 * Math.PI + Math.random() * 2 * Math.PI;
-  const duration = 5000;
-  const start = performance.now();
-  const startAngle = currentAngle;
+  const duration    = 5000;
+  const start       = performance.now();
+  const startAngle  = currentAngle;
 
   function easeOut(t) { return 1 - Math.pow(1 - t, 4); }
 
@@ -581,27 +620,55 @@ function spin() {
       requestAnimationFrame(animate);
     } else {
       spinning = false;
-      showResult();
+      guardarYMostrar();
     }
   }
 
   requestAnimationFrame(animate);
 }
 
-function showResult() {
-  const pointerAngle = -Math.PI / 2;
+// ============================================================
+// GUARDAR RESULTADO EN N8N Y MOSTRAR
+// ============================================================
+async function guardarYMostrar() {
+  const pointerAngle    = -Math.PI / 2;
   const normalizedAngle = ((pointerAngle - currentAngle) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
   const index = Math.floor(normalizedAngle / arc) % n;
-  const seg = segments[index];
+  const seg   = segments[index];
+
+  // Guardar en n8n
+  try {
+    await fetch(WEBHOOK_SAVE, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email:   EMAIL,
+        premio:  seg.prize  || 'Seguí participando',
+        codigo:  seg.code   || '',
+        mensaje: seg.msg    || ''
+      })
+    });
+  } catch(e) {
+    console.error('Error guardando resultado:', e);
+  }
+
+  mostrarPremio(seg.prize, seg.code, seg.msg, false);
+}
+
+// ============================================================
+// MOSTRAR PREMIO
+// ============================================================
+function mostrarPremio(prize, code, msg, yaGiro) {
   const box = document.getElementById('resultBox');
   box.style.display = 'block';
 
-  if (seg.code) {
-    launchConfetti();
+  if (code) {
+    if (!yaGiro) launchConfetti();
+    const titulo = yaGiro ? '🎁 Tu premio guardado' : '🎉 ¡Ganaste!';
     box.innerHTML = `
-      <h2>🎉 ¡Ganaste: ${seg.prize}!</h2>
-      <p>${seg.msg}</p>
-      <div class="coupon-code">${seg.code}</div><br>
+      <h2>${titulo}: ${prize}</h2>
+      <p>${msg}</p>
+      <div class="coupon-code">${code}</div><br>
       <a class="checkout-btn" href="https://fromnorth.store" target="_blank">✦ Ir a la tienda ✦</a>
     `;
   } else {
@@ -622,7 +689,7 @@ function launchConfetti() {
       piece.className = 'confetti-piece';
       piece.style.left = Math.random() * 100 + 'vw';
       piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-      piece.style.width = (6 + Math.random() * 8) + 'px';
+      piece.style.width  = (6 + Math.random() * 8) + 'px';
       piece.style.height = (6 + Math.random() * 8) + 'px';
       piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
       piece.style.animationDuration = (2 + Math.random() * 2.5) + 's';
