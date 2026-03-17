@@ -454,18 +454,18 @@ for (let i = 0; i < studCount; i++) {
 }
 
 const segments = [
-  { label: "1 prenda\ngratis",    color: "#8b1a1a", rim: "#c0392b", text: "#ffd700", code: "RULETA1", prize: "1 prenda gratis",    msg: "Usá el código al finalizar tu compra y llevate la Remera Basic Snow sin costo." },
-  { label: "10%\ndescuento",      color: "#1a3a1a", rim: "#27ae60", text: "#ffd700", code: "RULETA3", prize: "10% de descuento",    msg: "Aplicá el código en tu carrito y obtenete un 10% off en toda la tienda." },
-  { label: "Seguí\nparticipando", color: "#1e1e2e", rim: "#4a4a6a", text: "#aaa",    code: null,       prize: null,                 msg: null },
-  { label: "Envío\ngratis",       color: "#1a2a3a", rim: "#2980b9", text: "#ffd700", code: "RULETA5", prize: "Envío gratis",        msg: "Usá el código y recibís tu pedido sin costo de envío." },
-  { label: "30%\ndescuento",      color: "#3a1a1a", rim: "#e74c3c", text: "#ffd700", code: "RULETA2", prize: "30% de descuento",    msg: "Aplicá el código en tu carrito y obtenete un 30% off. ¡Aprovechalo ahora!" },
-  { label: "Seguí\nparticipando", color: "#1e1e2e", rim: "#4a4a6a", text: "#aaa",    code: null,       prize: null,                 msg: null },
-  { label: "5%\ndescuento",       color: "#1a1a3a", rim: "#8e44ad", text: "#ffd700", code: "RULETA4", prize: "5% de descuento",     msg: "Aplicá el código y obtenete un 5% off en toda la tienda." },
-  { label: "Seguí\nparticipando", color: "#1e1e2e", rim: "#4a4a6a", text: "#aaa",    code: null,       prize: null,                 msg: null },
-  { label: "Envío\ngratis",       color: "#1a2a3a", rim: "#2980b9", text: "#ffd700", code: "RULETA5", prize: "Envío gratis",        msg: "Usá el código y recibís tu pedido sin costo de envío." },
-  { label: "Seguí\nparticipando", color: "#1e1e2e", rim: "#4a4a6a", text: "#aaa",    code: null,       prize: null,                 msg: null },
-  { label: "10%\ndescuento",      color: "#1a3a1a", rim: "#27ae60", text: "#ffd700", code: "RULETA3", prize: "10% de descuento",    msg: "Aplicá el código en tu carrito y obtenete un 10% off en toda la tienda." },
-  { label: "5%\ndescuento",       color: "#1a1a3a", rim: "#8e44ad", text: "#ffd700", code: "RULETA4", prize: "5% de descuento",     msg: "Aplicá el código y obtenete un 5% off en tu compra." },
+  { label: "1 prenda\ngratis",    color: "#8b1a1a", rim: "#c0392b", text: "#ffd700", prize: "1 prenda gratis",    msg: "Usá el código al finalizar tu compra y llevate la Remera Basic Snow sin costo.", tipo: "percentage", valor: "100" },
+  { label: "10%\ndescuento",      color: "#1a3a1a", rim: "#27ae60", text: "#ffd700", prize: "10% de descuento",   msg: "Aplicá el código en tu carrito y obtenete un 10% off en toda la tienda.",      tipo: "percentage", valor: "10"  },
+  { label: "Seguí\nparticipando", color: "#1e1e2e", rim: "#4a4a6a", text: "#aaa",    prize: null,                 msg: null,                                                                            tipo: null,         valor: null  },
+  { label: "Envío\ngratis",       color: "#1a2a3a", rim: "#2980b9", text: "#ffd700", prize: "Envío gratis",       msg: "Usá el código y recibís tu pedido sin costo de envío.",                        tipo: "shipping",   valor: "0"   },
+  { label: "30%\ndescuento",      color: "#3a1a1a", rim: "#e74c3c", text: "#ffd700", prize: "30% de descuento",   msg: "Aplicá el código en tu carrito y obtenete un 30% off. ¡Aprovechalo ahora!",   tipo: "percentage", valor: "30"  },
+  { label: "Seguí\nparticipando", color: "#1e1e2e", rim: "#4a4a6a", text: "#aaa",    prize: null,                 msg: null,                                                                            tipo: null,         valor: null  },
+  { label: "5%\ndescuento",       color: "#1a1a3a", rim: "#8e44ad", text: "#ffd700", prize: "5% de descuento",    msg: "Aplicá el código y obtenete un 5% off en toda la tienda.",                     tipo: "percentage", valor: "5"   },
+  { label: "Seguí\nparticipando", color: "#1e1e2e", rim: "#4a4a6a", text: "#aaa",    prize: null,                 msg: null,                                                                            tipo: null,         valor: null  },
+  { label: "Envío\ngratis",       color: "#1a2a3a", rim: "#2980b9", text: "#ffd700", prize: "Envío gratis",       msg: "Usá el código y recibís tu pedido sin costo de envío.",                        tipo: "shipping",   valor: "0"   },
+  { label: "Seguí\nparticipando", color: "#1e1e2e", rim: "#4a4a6a", text: "#aaa",    prize: null,                 msg: null,                                                                            tipo: null,         valor: null  },
+  { label: "10%\ndescuento",      color: "#1a3a1a", rim: "#27ae60", text: "#ffd700", prize: "10% de descuento",   msg: "Aplicá el código en tu carrito y obtenete un 10% off en toda la tienda.",      tipo: "percentage", valor: "10"  },
+  { label: "5%\ndescuento",       color: "#1a1a3a", rim: "#8e44ad", text: "#ffd700", prize: "5% de descuento",    msg: "Aplicá el código y obtenete un 5% off en tu compra.",                          tipo: "percentage", valor: "5"   },
 ];
 
 const n = segments.length;
@@ -636,23 +636,27 @@ async function guardarYMostrar() {
   const index = Math.floor(normalizedAngle / arc) % n;
   const seg   = segments[index];
 
-  // Guardar en n8n
+  // Guardar en n8n y recibir código único
+  let codigoGenerado = null;
   try {
-    await fetch(WEBHOOK_SAVE, {
+    const res  = await fetch(WEBHOOK_SAVE, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         email:   EMAIL,
         premio:  seg.prize  || 'Seguí participando',
-        codigo:  seg.code   || '',
-        mensaje: seg.msg    || ''
+        mensaje: seg.msg    || '',
+        tipo:    seg.tipo   || null,
+        valor:   seg.valor  || null
       })
     });
+    const data = await res.json();
+    codigoGenerado = data.codigo || null;
   } catch(e) {
     console.error('Error guardando resultado:', e);
   }
 
-  mostrarPremio(seg.prize, seg.code, seg.msg, false);
+  mostrarPremio(seg.prize, codigoGenerado, seg.msg, false);
 }
 
 // ============================================================
