@@ -363,7 +363,7 @@ const params = new URLSearchParams(window.location.search);
 const EMAIL  = (params.get('email') || '').trim().toLowerCase();
 
 const segments = [
-  { label: "Una camisa\ngratis",    dark: true,  prize: "1 prenda gratis",   msg: "Usá el código al finalizar tu compra y llevate la Remera Basic Snow sin costo.", tipo: "percentage", valor: "100" },
+  { label: "1 prenda\ngratis",    dark: true,  prize: "1 camisa gratis",   msg: "Usá el código al finalizar tu compra y llevate una camisa sin costo.", tipo: "percentage", valor: "100" },
   { label: "10%\ndescuento",      dark: false, prize: "10% de descuento",  msg: "Aplicá el código en tu carrito y obtenete un 10% off en toda la tienda.",      tipo: "percentage", valor: "10"  },
   { label: "Seguí\nparticipando", dark: true,  prize: null,                 msg: null,                                                                            tipo: null,         valor: null  },
   { label: "Envío\ngratis",       dark: false, prize: "Envío gratis",       msg: "Usá el código y recibís tu pedido sin costo de envío.",                        tipo: "shipping",   valor: "0"   },
