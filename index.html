@@ -89,6 +89,8 @@
     box-shadow: 0 8px 40px rgba(0,0,0,0.1);
   }
 
+  .wheel-outer::before { display: none; }
+
   .wheel-wrap {
     position: absolute;
     inset: 0;
@@ -273,25 +275,6 @@
     letter-spacing: 0.3px;
   }
 
-  /* Loading / Error */
-  .loading-box {
-    margin-top: 1.5rem;
-    font-size: 10px;
-    letter-spacing: 3px;
-    color: var(--mid);
-    text-transform: uppercase;
-  }
-
-  .error-box {
-    display: none;
-    margin-top: 1.5rem;
-    padding: 1.2rem 1.5rem;
-    border: 1px solid #ddd;
-    font-size: 12px;
-    color: var(--mid);
-    line-height: 1.7;
-  }
-
   .footer {
     margin-top: 3rem;
     font-size: 9px;
@@ -341,61 +324,56 @@
       <canvas id="wheel" width="340" height="340"></canvas>
     </div>
 
-    <div class="center-circle" id="centerBtn" onclick="spin()">✦</div>
+    <div class="center-circle" onclick="spin()">✦</div>
   </div>
 
-  <button id="spinBtn" onclick="spin()" disabled>Cargando</button>
+  <button id="spinBtn" onclick="spin()">Girar Ruleta</button>
 
-  <div class="loading-box" id="loadingBox">Verificando acceso</div>
-  <div class="error-box" id="errorBox"></div>
   <div class="result-box" id="resultBox"></div>
 
   <div class="footer">@from.north_</div>
 </div>
 
 <script>
-// ============================================================
-const WEBHOOK_CHECK = 'https://devn8n.santafeia.shop/webhook/check-ruleta';
-const WEBHOOK_SAVE  = 'https://devn8n.santafeia.shop/webhook/save-ruleta';
-// ============================================================
-
-const params = new URLSearchParams(window.location.search);
-const EMAIL  = (params.get('email') || '').trim().toLowerCase();
-
 const segments = [
-  { label: "1 Camisa\ngratis",    dark: true,  prize: "1 Camisa gratis",   msg: "Usá el código al finalizar tu compra y llevate 1 Camisa sin costo.", tipo: "percentage", valor: "100" },
-  { label: "10%\ndescuento",      dark: false, prize: "10% de descuento",  msg: "Aplicá el código en tu carrito y obtenete un 10% off en toda la tienda.",      tipo: "percentage", valor: "10"  },
-  { label: "Seguí\nparticipando", dark: true,  prize: null,                 msg: null,                                                                            tipo: null,         valor: null  },
-  { label: "Envío\ngratis",       dark: false, prize: "Envío gratis",       msg: "Usá el código y recibís tu pedido sin costo de envío.",                        tipo: "shipping",   valor: "0"   },
-  { label: "30%\ndescuento",      dark: true,  prize: "30% de descuento",  msg: "Aplicá el código en tu carrito y obtenete un 30% off. ¡Aprovechalo ahora!",   tipo: "percentage", valor: "30"  },
-  { label: "Seguí\nparticipando", dark: false, prize: null,                 msg: null,                                                                            tipo: null,         valor: null  },
-  { label: "5%\ndescuento",       dark: true,  prize: "5% de descuento",   msg: "Aplicá el código y obtenete un 5% off en toda la tienda.",                     tipo: "percentage", valor: "5"   },
-  { label: "Seguí\nparticipando", dark: false, prize: null,                 msg: null,                                                                            tipo: null,         valor: null  },
-  { label: "Envío\ngratis",       dark: true,  prize: "Envío gratis",       msg: "Usá el código y recibís tu pedido sin costo de envío.",                        tipo: "shipping",   valor: "0"   },
-  { label: "Seguí\nparticipando", dark: false, prize: null,                 msg: null,                                                                            tipo: null,         valor: null  },
-  { label: "10%\ndescuento",      dark: true,  prize: "10% de descuento",  msg: "Aplicá el código en tu carrito y obtenete un 10% off en toda la tienda.",      tipo: "percentage", valor: "10"  },
-  { label: "5%\ndescuento",       dark: false, prize: "5% de descuento",   msg: "Aplicá el código y obtenete un 5% off en tu compra.",                          tipo: "percentage", valor: "5"   },
+  { label: "1 camisa\ngratis",    dark: true,  code: "RULETA 1", prize: "1 camisa gratis",   msg: "Usá el código al finalizar tu compra y llevate la Camisa Basic Snow sin costo." },
+  { label: "10%\ndescuento",      dark: false, code: "RULETA 3", prize: "10% de descuento",  msg: "Aplicá el código en tu carrito y obtenete un 10% off en toda la tienda." },
+  { label: "Seguí\nparticipando", dark: true,  code: null,       prize: null,                msg: null },
+  { label: "Envío\ngratis",       dark: false, code: "RULETA 5", prize: "Envío gratis",       msg: "Usá el código y recibís tu pedido sin costo de envío." },
+  { label: "30%\ndescuento",      dark: true,  code: "RULETA 2", prize: "30% de descuento",  msg: "Aplicá el código en tu carrito y obtenete un 30% off. ¡Aprovechalo ahora!" },
+  { label: "Seguí\nparticipando", dark: false, code: null,       prize: null,                msg: null },
+  { label: "5%\ndescuento",       dark: true,  code: "RULETA 4", prize: "5% de descuento",   msg: "Aplicá el código y obtenete un 5% off en toda la tienda." },
+  { label: "Seguí\nparticipando", dark: false, code: null,       prize: null,                msg: null },
+  { label: "Envío\ngratis",       dark: true,  code: "RULETA 5", prize: "Envío gratis",       msg: "Usá el código y recibís tu pedido sin costo de envío." },
+  { label: "Seguí\nparticipando", dark: false, code: null,       prize: null,                msg: null },
+  { label: "10%\ndescuento",      dark: true,  code: "RULETA 3", prize: "10% de descuento",  msg: "Aplicá el código en tu carrito y obtenete un 10% off en toda la tienda." },
+  { label: "5%\ndescuento",       dark: false, code: "RULETA 4", prize: "5% de descuento",   msg: "Aplicá el código y obtenete un 5% off en tu compra." },
 ];
 
-const n   = segments.length;
+const n = segments.length;
 const arc = (2 * Math.PI) / n;
 let currentAngle = 0;
 let spinning = false;
-let hasSpun  = false;
+let hasSpun = false;
 
 const canvas = document.getElementById('wheel');
-const ctx    = canvas.getContext('2d');
-const size   = 340;
+const ctx = canvas.getContext('2d');
+const size = 340;
 const cx = size / 2, cy = size / 2, r = size / 2 - 1;
 
-const GOLD = '#b8975a';
+const GOLD     = '#b8975a';
+const GOLD_DIM = 'rgba(184,151,90,0.22)';
 
 function segColor(i) {
   const s = segments[i];
-  if (!s.prize) return i % 2 === 0 ? '#404040' : '#505050';
+  if (!s.code) return i % 2 === 0 ? '#404040' : '#505050'; // dark gray for no-prize
   return s.dark
     ? (i % 2 === 0 ? '#111111' : '#1e1e1e')
     : (i % 2 === 0 ? '#444444' : '#555555');
+}
+
+function textColor(i) {
+  return '#ffffff'; // white on every segment
 }
 
 function drawWheel(angle) {
@@ -412,6 +390,7 @@ function drawWheel(angle) {
     ctx.fillStyle = segColor(i);
     ctx.fill();
 
+    // Gold divider
     ctx.beginPath();
     ctx.moveTo(cx, cy);
     ctx.lineTo(cx + Math.cos(start) * r, cy + Math.sin(start) * r);
@@ -419,22 +398,26 @@ function drawWheel(angle) {
     ctx.lineWidth = 1;
     ctx.stroke();
 
+    // Text
     ctx.save();
     ctx.translate(cx, cy);
     ctx.rotate(start + arc / 2);
     ctx.textAlign = 'right';
-    ctx.font = '700 11px Montserrat, sans-serif';
+    ctx.font = `700 11px Montserrat, sans-serif`;
     const lines = segments[i].label.split('\n');
     lines.forEach((line, li) => {
       const yOff = (li - (lines.length - 1) / 2) * 15;
+      // Shadow
       ctx.fillStyle = 'rgba(0,0,0,0.55)';
       ctx.fillText(line, r - 11, yOff + 5);
-      ctx.fillStyle = '#ffffff';
+      // Text
+      ctx.fillStyle = textColor(i);
       ctx.fillText(line, r - 12, yOff + 4);
     });
     ctx.restore();
   }
 
+  // Center disk
   ctx.beginPath();
   ctx.arc(cx, cy, 26, 0, 2 * Math.PI);
   ctx.fillStyle = '#ffffff';
@@ -446,63 +429,18 @@ function drawWheel(angle) {
 
 drawWheel(0);
 
-// ============================================================
-// VERIFICACIÓN
-// ============================================================
-async function verificarAcceso() {
-  const loadingBox = document.getElementById('loadingBox');
-  const spinBtn    = document.getElementById('spinBtn');
-  const centerBtn  = document.getElementById('centerBtn');
-  const errorBox   = document.getElementById('errorBox');
-
-  if (!EMAIL) {
-    loadingBox.style.display = 'none';
-    errorBox.style.display = 'block';
-    errorBox.innerHTML = 'Este link no es válido. Revisá el mail que recibiste y usá el botón original.';
-    spinBtn.disabled = true;
-    centerBtn.onclick = null;
-    return;
-  }
-
-  try {
-    const res  = await fetch(`${WEBHOOK_CHECK}?email=${encodeURIComponent(EMAIL)}`);
-    const data = await res.json();
-    loadingBox.style.display = 'none';
-
-    if (data.puede === false) {
-      hasSpun = true;
-      spinBtn.disabled = true;
-      centerBtn.onclick = null;
-      mostrarPremio(data.premio, data.codigo, data.mensaje, true);
-    } else {
-      spinBtn.disabled = false;
-      spinBtn.textContent = 'Girar Ruleta';
-    }
-  } catch (e) {
-    loadingBox.style.display = 'none';
-    errorBox.style.display = 'block';
-    errorBox.innerHTML = 'Hubo un error al verificar tu acceso. Intentá de nuevo en unos minutos.';
-    spinBtn.disabled = true;
-  }
-}
-
-verificarAcceso();
-
-// ============================================================
-// GIRAR
-// ============================================================
 function spin() {
   if (spinning || hasSpun) return;
   spinning = true;
-  hasSpun  = true;
+  hasSpun = true;
   document.getElementById('spinBtn').disabled = true;
   document.getElementById('resultBox').style.display = 'none';
 
-  const extraSpins  = 6 + Math.random() * 4;
+  const extraSpins = 6 + Math.random() * 4;
   const targetAngle = currentAngle + extraSpins * 2 * Math.PI + Math.random() * 2 * Math.PI;
-  const duration    = 5000;
-  const start       = performance.now();
-  const startAngle  = currentAngle;
+  const duration = 5000;
+  const start = performance.now();
+  const startAngle = currentAngle;
 
   function easeOut(t) { return 1 - Math.pow(1 - t, 4); }
 
@@ -515,64 +453,31 @@ function spin() {
       requestAnimationFrame(animate);
     } else {
       spinning = false;
-      guardarYMostrar();
+      showResult();
     }
   }
-
   requestAnimationFrame(animate);
 }
 
-// ============================================================
-// GUARDAR Y MOSTRAR
-// ============================================================
-async function guardarYMostrar() {
-  const pointerAngle    = 0;
-  const normalizedAngle = ((pointerAngle - currentAngle) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
-  const index = Math.floor(normalizedAngle / arc) % n;
-  const seg   = segments[index];
-
-  let codigoGenerado = null;
-  try {
-    const res  = await fetch(WEBHOOK_SAVE, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email:   EMAIL,
-        premio:  seg.prize  || 'Seguí participando',
-        mensaje: seg.msg    || '',
-        tipo:    seg.tipo   || null,
-        valor:   seg.valor  || null
-      })
-    });
-    const data = await res.json();
-    codigoGenerado = data.codigo || null;
-  } catch(e) {
-    console.error('Error guardando resultado:', e);
-  }
-
-  mostrarPremio(seg.prize, codigoGenerado, seg.msg, false);
-}
-
-// ============================================================
-// MOSTRAR PREMIO
-// ============================================================
-function mostrarPremio(prize, code, msg, yaGiro) {
+function showResult() {
+  const pointerAngle = 0;
+  const norm = ((pointerAngle - currentAngle) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+  const index = Math.floor(norm / arc) % n;
+  const seg = segments[index];
   const box = document.getElementById('resultBox');
   box.style.display = 'block';
 
-  if (prize && prize !== 'Seguí participando') {
-    if (!yaGiro) launchConfetti();
-    const etiqueta = yaGiro ? 'Tu premio guardado' : '¡Tu premio!';
+  if (seg.code) {
+    launchConfetti();
     box.innerHTML = `
       <div class="result-inner">
-        <p class="prize-label">${etiqueta}</p>
-        <h2>${prize}</h2>
-        <p>${msg || ''}</p>
-        ${code ? `
+        <p class="prize-label">¡Tu premio!</p>
+        <h2>${seg.prize}</h2>
+        <p>${seg.msg}</p>
         <div class="coupon-wrap">
           <p class="coupon-label">Código de descuento</p>
-          <div class="coupon-code">${code}</div>
-        </div>` : ''}
+          <div class="coupon-code">${seg.code}</div>
+        </div>
         <a class="checkout-btn" href="https://fromnorth.store" target="_blank">Ir a la tienda</a>
       </div>
     `;
@@ -582,7 +487,7 @@ function mostrarPremio(prize, code, msg, yaGiro) {
         <p class="prize-label">Esta vez no fue</p>
         <h2>Seguí participando</h2>
         <p class="no-prize-text">Tu carrito sigue esperándote con todo lo que te gustó.</p>
-        <a class="checkout-btn" href="https://fromnorth.store" target="_blank">Ver mi carrito</a>
+        <a class="checkout-btn" href="https://fromnorth.store" target="_blank">Ir a la tienda</a>
       </div>
     `;
   }
@@ -597,7 +502,7 @@ function launchConfetti() {
       p.style.left = Math.random() * 100 + 'vw';
       p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
       const s = 4 + Math.random() * 6;
-      p.style.width  = s + 'px';
+      p.style.width = s + 'px';
       p.style.height = s + 'px';
       p.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
       p.style.animationDuration = (2.5 + Math.random() * 2) + 's';
