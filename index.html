@@ -336,18 +336,20 @@
 
 <script>
 const segments = [
-  { label: "1 camisa\ngratis",    dark: true,  code: "RULETA 1", prize: "1 camisa gratis",   msg: "Usá el código al finalizar tu compra y llevate la Camisa Basic Snow sin costo." },
-  { label: "10%\ndescuento",      dark: false, code: "RULETA 3", prize: "10% de descuento",  msg: "Aplicá el código en tu carrito y obtenete un 10% off en toda la tienda." },
-  { label: "Seguí\nparticipando", dark: true,  code: null,       prize: null,                msg: null },
-  { label: "Envío\ngratis",       dark: false, code: "RULETA 5", prize: "Envío gratis",       msg: "Usá el código y recibís tu pedido sin costo de envío." },
-  { label: "30%\ndescuento",      dark: true,  code: "RULETA 2", prize: "30% de descuento",  msg: "Aplicá el código en tu carrito y obtenete un 30% off. ¡Aprovechalo ahora!" },
+  { label: "10%\ndescuento",      dark: true,  code: "RULETA 3", prize: "10% de descuento",  msg: "Aplicá el código en tu carrito y obtenete un 10% off en toda la tienda." },
   { label: "Seguí\nparticipando", dark: false, code: null,       prize: null,                msg: null },
+  { label: "5%\ndescuento",       dark: true,  code: "RULETA 4", prize: "5% de descuento",   msg: "Aplicá el código y obtenete un 5% off en toda la tienda." },
+  { label: "Envío\ngratis",       dark: false, code: "RULETA 5", prize: "Envío gratis",       msg: "Usá el código y recibís tu pedido sin costo de envío." },
+  { label: "10%\ndescuento",      dark: true,  code: "RULETA 3", prize: "10% de descuento",  msg: "Aplicá el código en tu carrito y obtenete un 10% off en toda la tienda." },
+  { label: "Seguí\nparticipando", dark: false, code: null,       prize: null,                msg: null },
+  { label: "1 camisa\ngratis",    dark: true,  code: "RULETA 1", prize: "1 camisa gratis",   msg: "Usá el código al finalizar tu compra y llevate la Camisa Basic Snow sin costo." },
+  { label: "5%\ndescuento",       dark: false, code: "RULETA 4", prize: "5% de descuento",   msg: "Aplicá el código y obtenete un 5% off en tu compra." },
+  { label: "Seguí\nparticipando", dark: true,  code: null,       prize: null,                msg: null },
+  { label: "30%\ndescuento",      dark: false, code: "RULETA 2", prize: "30% de descuento",  msg: "Aplicá el código en tu carrito y obtenete un 30% off. ¡Aprovechalo ahora!" },
   { label: "5%\ndescuento",       dark: true,  code: "RULETA 4", prize: "5% de descuento",   msg: "Aplicá el código y obtenete un 5% off en toda la tienda." },
   { label: "Seguí\nparticipando", dark: false, code: null,       prize: null,                msg: null },
   { label: "Envío\ngratis",       dark: true,  code: "RULETA 5", prize: "Envío gratis",       msg: "Usá el código y recibís tu pedido sin costo de envío." },
-  { label: "Seguí\nparticipando", dark: false, code: null,       prize: null,                msg: null },
-  { label: "10%\ndescuento",      dark: true,  code: "RULETA 3", prize: "10% de descuento",  msg: "Aplicá el código en tu carrito y obtenete un 10% off en toda la tienda." },
-  { label: "5%\ndescuento",       dark: false, code: "RULETA 4", prize: "5% de descuento",   msg: "Aplicá el código y obtenete un 5% off en tu compra." },
+  { label: "10%\ndescuento",      dark: false, code: "RULETA 3", prize: "10% de descuento",  msg: "Aplicá el código en tu carrito y obtenete un 10% off en toda la tienda." },
 ];
 
 const n = segments.length;
@@ -366,7 +368,7 @@ const GOLD_DIM = 'rgba(184,151,90,0.22)';
 
 function segColor(i) {
   const s = segments[i];
-  if (!s.code) return i % 2 === 0 ? '#404040' : '#505050'; // dark gray for no-prize
+  if (!s.code) return i % 2 === 0 ? '#404040' : '#505050';
   return s.dark
     ? (i % 2 === 0 ? '#111111' : '#1e1e1e')
     : (i % 2 === 0 ? '#444444' : '#555555');
